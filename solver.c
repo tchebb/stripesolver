@@ -6,15 +6,27 @@
 #include <signal.h>
 #include <errno.h>
 
+/* usecdifference - Find a sub-second difference between microsecond values.
+ * Parameters:
+ *   start: Start time in microseconds.
+ *   end: End time in mocroseconds.
+ * Return value: Difference between start and end in microseconds.
+ */
 inline long usecdifference (long start, long end) {
 	long result = end - start;
 	if (end < start) {
-		// Everything we time will take less than a second.
+		// Everything we time will take less than a second
 		result += 1000000;
 	}
 	return result;
 }
 
+/* findlargest - Find the largest value in an array of unsigned chars.
+ * Parameters:
+ *   counts: Unsigned char array.
+ *   length: Number of elements in array.
+ * Return value: Either the index of the largest value, or -1 in case of a tie.
+ */
 int findlargest (unsigned char *counts, int length) {
 	int i, highind, highval = 0, tied = 1;
 	for (i = 0; i < length; ++i) {
@@ -30,6 +42,13 @@ int findlargest (unsigned char *counts, int length) {
 	return tied ? -1 : highind;
 }
 
+/* qs_partition - Partitioning algorithm for quicksort - do not call directly.
+ * Parameters:
+ *   array: Array containing values to partition.
+ *   start: First index of area to partition.
+ *   end: Last index of area to partition.
+ * Return value: Index of the center of the partition.
+ */
 int qs_partition (long *array, int start, int end) {
 	int pivot = array[(start + end) / 2];
 	int i = start - 1, j = end + 1;
@@ -51,6 +70,12 @@ int qs_partition (long *array, int start, int end) {
 	}
 }
 
+/* qs_helper - Recursive algorithm for quicksort - do not call directly.
+ * Parameters:
+ *   array: Array containing values to sort.
+ *   start: First index of area to sort.
+ *   end: Last index of area to sort.
+ */
 void qs_helper (long *array, int start, int end) {
 	int split = qs_partition(array, start, end);
 
@@ -62,10 +87,24 @@ void qs_helper (long *array, int start, int end) {
 	}
 }
 
+/* quicksort - Quicksort algorithm.
+ * Parameters:
+ *   array: Array to sort.
+ *   length: Number of elements in array.
+ */
 void quicksort (long *array, int length) {
 	qs_helper(array, 0, length - 1);
 }
 
+/* startguesser - Starts the target application with the given string.
+ * Parameters:
+ *   fd: Array of file descriptors that will be filled with the pipes to stdin,
+ *       stdout, and stderr, respectively.
+ *   path: Path of target application.
+ *   file: File to target.
+ *   str: String to guess.
+ * Return value: PID of child process.
+ */
 pid_t startguesser (int fd[3], char *path, char *file, char *str) {
 	int infd[2], outfd[2], errfd[2];
 	pid_t child;
@@ -109,6 +148,14 @@ pid_t startguesser (int fd[3], char *path, char *file, char *str) {
 	return child;
 }
 
+/* teststring - Tests the given string - assumes that all characters except
+ *              the last two are correct.
+ * Parameters:
+ *   path: Path of target application.
+ *   file: File to target.
+ *   str: String to guess.
+ * Return value: Time taken for the second-to-last character to be checked.
+ */
 long teststring (char *path, char *file, char *str) {
 	int numchars = strlen(str);
 	if (numchars <= 1) {
@@ -141,7 +188,7 @@ long teststring (char *path, char *file, char *str) {
 				}
 			}
 			++i;
-		} else if (current == 'i') {
+		} else if (current == 'i') { // Hack - 'i' only occurs in the success message
 			close(fd[2]);
 			return -2;
 		}
@@ -151,6 +198,12 @@ long teststring (char *path, char *file, char *str) {
 	return usecdifference(start, end);
 }
 
+/* markoutliers - Attempts to find and mark the lowest times in the in array.
+ * Parameters:
+ *   in: Array of length length containing time measurements.
+ *   out: Array of length length which will get "correct" elements incremented.
+ *   length: Number of elements in arrays.
+ */
 void markoutliers (long *in, unsigned char *out, int length) {
 	long sorted[length];
 	memcpy(sorted, in, length * sizeof(long));
@@ -172,6 +225,14 @@ void markoutliers (long *in, unsigned char *out, int length) {
 	}
 }
 
+/* guesschar - Guesses the next character in string known.
+ * Parameters:
+ *   path: Path of target application.
+ *   file: File to target.
+ *   known: Current known string. The guessed character will be appended.
+ *   charlist: List of characters to try.
+ * Return value: Guessed character or 0 if an error occured.
+ */
 char guesschar (char *path, char *file, char *known, char *charlist) {
 	int numchars = strlen(charlist);
 	int index = strlen(known);
@@ -206,6 +267,13 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 	}
 }
 
+/* findstring - Finds an entire string.
+ * Parameters:
+ *   path: Path of target application.
+ *   file: File to target.
+ *   charlist: List of characters to try.
+ * Return value: Guessed string or 0 if an error occured.
+ */
 char *findstring (char *path, char *file, char *charlist) {
 	char *str = (char*)malloc(50);
 	str[0] = '\0';
@@ -219,6 +287,10 @@ char *findstring (char *path, char *file, char *charlist) {
 	return 0;
 }
 
+/* main - Main function.
+ * Parameters: Seriously?
+ * Return value: You should know this.
+ */
 int main (int argc, char **argv) {
 	char *charlist = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	FILE *fd;
