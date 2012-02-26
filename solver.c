@@ -6,6 +6,10 @@
 #include <signal.h>
 #include <errno.h>
 
+#define MAX_PASSES 5
+#define MAX_MATCHES 6
+#define MAX_LENGTH 50
+
 /* usecdifference - Find a sub-second difference between microsecond values.
  * Parameters:
  *   start: Start time in microseconds.
@@ -210,7 +214,7 @@ void markoutliers (long *in, unsigned char *out, int length) {
 	quicksort(sorted, length);
 
 	int i, difference, threshhold, highval = 0;
-	for (i = 1; i < 6; ++i) {
+	for (i = 1; i < MAX_MATCHES; ++i) {
 		difference = sorted[i] - sorted[i - 1];
 		if (difference > highval) {
 			highval = difference;
@@ -248,7 +252,7 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 	}
 
 	int highind;
-	while ((highind = findlargest(counts, numchars)) == -1 && j <= 5) {
+	while ((highind = findlargest(counts, numchars)) == -1 && j <= MAX_PASSES) {
 		for (i = 0; i < numchars; ++i) {
 			known[index] = charlist[i];
 			times[i] = teststring(path, file, known);
@@ -275,10 +279,10 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
  * Return value: Guessed string or 0 if an error occured.
  */
 char *findstring (char *path, char *file, char *charlist) {
-	char *str = (char*)malloc(50);
+	char *str = (char*)malloc(MAX_LENGTH);
 	str[0] = '\0';
 	int i = 0;
-	while (guesschar(path, file, str, charlist) != 0 && i < 48) {
+	while (guesschar(path, file, str, charlist) != 0 && i < MAX_LENGTH - 2) {
 		if (teststring(path, file, str) == -2) {
 			return str;
 		}
