@@ -86,7 +86,7 @@ pid_t startguesser (int fd[3], char *path, char *file, char *str) {
 		dup2(errfd[1], 2);
 		  close(errfd[0]);
 		  close(errfd[1]);
-		if (execl(path, path, file, str) == -1) {
+		if (execl(path, path, file, str, NULL) == -1) {
 			perror("Error executing guesser");
 			exit(EXIT_FAILURE);
 		}
@@ -126,14 +126,14 @@ long teststring (char *path, char *file, char *str) {
 	close(fd[0]);
 	close(fd[1]);
 	errfile = fdopen(fd[2], "r");
-	setvbuf(errfile, 0, _IONBF, 0);
+	setvbuf(errfile, NULL, _IONBF, 0);
 
 	// Time each '.' output
 	i = 0;
 	while ((current = fgetc(errfile)) != EOF) {
 		if (current == '.') {
 			if (i >= numchars - 2) {
-				gettimeofday(&temp, 0);
+				gettimeofday(&temp, NULL);
 				if (i == numchars - 2) {
 					start = temp.tv_usec;
 				} else {
