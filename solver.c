@@ -158,7 +158,9 @@ pid_t startguesser (int fd[3], char *path, char *file, char *str) {
  *   path: Path of target application.
  *   file: File to target.
  *   str: String to guess.
- * Return value: Time taken for the second-to-last character to be checked.
+ * Return value: Time taken for the second-to-last character to be checked,
+ *               -1 if the string is too short, or -2 if it is confirmed
+ *               to be correct.
  */
 long teststring (char *path, char *file, char *str) {
 	int numchars = strlen(str);
