@@ -157,19 +157,13 @@ void markoutliers (long *in, unsigned char *out, int length) {
 	quicksort(sorted, length);
 
 	int i, difference, threshhold, highval = 0;
-	for (i = 1; i < length; ++i) {
+	for (i = 1; i < 6; ++i) {
 		difference = sorted[i] - sorted[i - 1];
 		if (difference > highval) {
 			highval = difference;
 			threshhold = sorted[i];
 		}
 	}
-
-	printf("{");
-	for (i = 0; i < length - 1; ++i) {
-		printf("%i, ", sorted[i]);
-	}
-	printf("%i} = %i\n", sorted[i], threshhold);
 
 	for (i = 0; i < length; ++i) {
 		if (in[i] < threshhold) {
@@ -214,11 +208,9 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 
 char *findstring (char *path, char *file, char *charlist) {
 	char *str = (char*)malloc(50);
-	char current;
 	str[0] = '\0';
 	int i = 0;
-	while ((current = guesschar(path, file, str, charlist)) != 0 && i < 48) {
-		// printf("%c", current); // TODO: Remove debugging
+	while (guesschar(path, file, str, charlist) != 0 && i < 48) {
 		if (teststring(path, file, str) == -2) {
 			return str;
 		}
