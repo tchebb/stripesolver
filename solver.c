@@ -222,6 +222,12 @@ void markoutliers (long *in, unsigned char *out, int length) {
 		}
 	}
 
+	/*printf("  {");
+	for (i = 0; i < length - 1; ++i) {
+		printf("%i, ", sorted[i]);
+	}
+	printf("%i} = %i\n", sorted[i], threshhold);*/
+
 	for (i = 0; i < length; ++i) {
 		if (in[i] < threshhold) {
 			++out[i];
@@ -246,13 +252,16 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 	known[index + 1] = '!';
 	known[index + 2] = '\0';
 
+	// printf("Zeroing counts\n");
 	int i, j = 0;
 	for (i = 0; i < numchars; ++i) {
 		counts[i] = 0;
 	}
 
+	// printf("Running passes\n");
 	int highind;
 	while ((highind = findlargest(counts, numchars)) == -1 && j <= MAX_PASSES) {
+		// printf("  Pass %i\n", j);
 		for (i = 0; i < numchars; ++i) {
 			known[index] = charlist[i];
 			times[i] = teststring(path, file, known);
