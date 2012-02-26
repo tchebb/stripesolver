@@ -15,7 +15,7 @@ inline long usecdifference (long start, long end) {
 	return result;
 }
 
-int findlargest (char *counts, int length) {
+int findlargest (unsigned char *counts, int length) {
 	int i, highind, highval = 0, tied = 1;
 	for (i = 0; i < length; ++i) {
 		if (counts[i] > highval) {
@@ -117,12 +117,12 @@ long teststring (char *path, char *file, char *str) {
 
 	int fd[3], i;
 	struct timeval temp;
-	long start, end;
+	long start = 0, end = 0;
 	FILE *errfile;
 	char current;
 
 	// Start the guesser and open the stderr fd
-	pid_t guesser = startguesser(fd, path, file, str);
+	startguesser(fd, path, file, str);
 	close(fd[0]);
 	close(fd[1]);
 	errfile = fdopen(fd[2], "r");
