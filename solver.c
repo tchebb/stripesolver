@@ -81,6 +81,9 @@ int qs_partition (long *array, int start, int end) {
  *   end: Last index of area to sort.
  */
 void qs_helper (long *array, int start, int end) {
+	if (start >= MAX_MATCHES) {
+		return;
+	}
 	int split = qs_partition(array, start, end);
 
 	if (start < split) {
