@@ -6,5 +6,5 @@ solver : $(OBJECTS)
 
 .PHONY: clean
 clean :
-	-rm solver $(OBJECTS)
+	-rm stripesolver $(OBJECTS)
 
