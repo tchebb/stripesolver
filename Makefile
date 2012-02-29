@@ -1,8 +1,8 @@
-OBJECTS = solver.o
+OBJECTS = main.o
 CFLAGS = -Wall
 
 solver : $(OBJECTS)
-	cc $(CFLAGS) -o solver $(OBJECTS)
+	cc $(CFLAGS) -o stripesolver $(OBJECTS)
 
 .PHONY: clean
 clean :

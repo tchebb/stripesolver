@@ -9,7 +9,7 @@ stripesolver is a timing-based string guesser intended to solve level 6 of the S
 Compiling
 ---------
 
-To compile stripesolver, simply run `make` from inside the source directory. The `solver` binary will be created and can then be used to guess a string.
+To compile stripesolver, simply run `make` from inside the source directory. The `stripesolver` binary will be created and can then be used to guess a string.
 
 Usage
 -----
