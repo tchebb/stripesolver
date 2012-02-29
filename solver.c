@@ -274,16 +274,17 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 	known[index + 1] = '!';
 	known[index + 2] = '\0';
 
-	// printf("Zeroing counts\n");
+	// printf("Guessing character %i\n", index + 1);
+	// printf("  Zeroing counts\n");
 	int i, j = 0;
 	for (i = 0; i < numchars; ++i) {
 		counts[i] = 0;
 	}
 
-	// printf("Running passes\n");
+	// printf("  Running passes\n");
 	int highind;
 	while ((highind = findlargest(counts, numchars)) == -1 && j <= MAX_PASSES) {
-		// printf("  Pass %i\n", j);
+		// printf("    Pass %i\n", j + 1);
 		for (i = 0; i < numchars; ++i) {
 			known[index] = charlist[i];
 			times[i] = teststring(path, file, known);
@@ -291,6 +292,7 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 		++j;
 		markoutliers(times, counts, numchars);
 	}
+	// printf("Guessed character %i as %c after %i %s\n", index + 1, charlist[highind], j, j == 1 ? "pass" : "passes");
 
 	if (highind == -1) {
 		known[index] = '\0';
