@@ -215,12 +215,12 @@ long teststring (char *path, char *file, char *str) {
 			}
 			++i;
 		} else if (current == 'i') { // Hack - 'i' only occurs in the success message
-			close(fd[2]);
+			fclose(errfile);
 			return -2;
 		}
 	}
 
-	close(fd[2]);
+	fclose(errfile);
 	return usecdifference(start, end);
 }
 
