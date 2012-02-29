@@ -214,14 +214,41 @@ long teststring (char *path, char *file, char *str) {
 				}
 			}
 			++i;
-		} else if (current == 'i') { // Hack - 'i' only occurs in the success message
-			fclose(errfile);
-			return -2;
 		}
 	}
 
 	fclose(errfile);
 	return usecdifference(start, end);
+}
+
+/* checkstring - Checks the given string. Is deterministic, unlike teststring.
+ * Parameters:
+ *   path: Path of target application.
+ *   file: File to target.
+ *   str: String to check.
+ * Return value: 0 if the string is not correct, 1 if it is.
+ */
+unsigned char checkstring (char *path, char *file, char *str) {
+	int fd[3];
+	FILE *errfile;
+	char current;
+
+	// Start the guesser and open the stderr fd
+	startguesser(fd, path, file, str);
+	close(fd[0]);
+	close(fd[1]);
+	errfile = fdopen(fd[2], "r");
+
+	unsigned char linecount = 0;
+	while ((current = fgetc(errfile)) != EOF) {
+		if (current == '\n' && ++linecount == 2) {
+			current = fgetc(errfile);
+			fclose(errfile);
+			return current != EOF;
+		}
+	}
+	fclose(errfile);
+	return 0;
 }
 
 /* markoutliers - Attempts to find and mark the lowest times in the in array.
@@ -316,7 +343,7 @@ char *findstring (char *path, char *file, char *charlist) {
 	str[0] = '\0';
 	int i = 0;
 	while (guesschar(path, file, str, charlist) != 0 && i < MAX_LENGTH - 2) {
-		if (teststring(path, file, str) == -2) {
+		if (checkstring(path, file, str)) {
 			return str;
 		}
 		++i;
