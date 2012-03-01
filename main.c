@@ -303,8 +303,8 @@ void markoutliers (long *in, unsigned char *out, int length) {
 	printf("%i} = %i\n", sorted[i], threshhold);*/
 
 	for (i = 0; i < length; ++i) {
-		if (in[i] < threshhold) {
-			++out[i];
+		if (in[i] >= threshhold) {
+			out[i] = 0;
 		}
 	}
 }
@@ -331,18 +331,21 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 	// printf("  Zeroing counts\n");
 	int i, j = 0;
 	for (i = 0; i < numchars; ++i) {
-		counts[i] = 0;
+		counts[i] = 1;
 	}
 
 	// printf("  Running passes\n");
-	int highind, wrongind, incorrect = 1;
+	int highind, wrongind, incorrect;
 	while ((highind = findlargest(counts, numchars)) == -1 && j <= MAX_PASSES) {
 		// printf("    Pass %i\n", j + 1);
+		incorrect = 1;
 		for (i = 0; i < numchars; ++i) {
-			known[index] = charlist[i];
-			times[i] = teststring(path, file, known, &wrongind);
-			if (wrongind == index) {
-				incorrect = 0;
+			if (counts[i]) {
+				known[index] = charlist[i];
+				times[i] = teststring(path, file, known, &wrongind);
+				if (wrongind == index) {
+					incorrect = 0;
+				}
 			}
 		}
 		markoutliers(times, counts, numchars);
@@ -374,13 +377,18 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
  */
 char *findstring (char *path, char *file, char *charlist) {
 	char *str = (char*)malloc(MAX_LENGTH);
+	char current;
 	str[0] = '\0';
 	int i = 0;
-	while (guesschar(path, file, str, charlist) != 0 && i < MAX_LENGTH - 2) {
+	while ((current = guesschar(path, file, str, charlist)) != 0 && i < MAX_LENGTH - 2) {
 		if (checkstring(path, file, str)) {
 			return str;
 		}
-		++i;
+		if (current == -1) {
+			--i;
+		} else {
+			++i;
+		}
 	}
 	return 0;
 }
