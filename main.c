@@ -24,7 +24,7 @@
 #include <errno.h>
 
 #define MAX_PASSES 5
-#define MAX_LENGTH 50
+#define MAX_LENGTH 100
 
 /* usecdifference - Find a sub-second difference between microsecond values.
  * Parameters:
