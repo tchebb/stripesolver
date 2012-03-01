@@ -295,7 +295,7 @@ void markoutliers (long *in, unsigned char *out, int length) {
 	}
 	threshhold = sorted[split];
 
-	/*printf("  {");
+	/*printf("    {");
 	for (i = 0; i < length - 1; ++i) {
 		printf("%i, ", sorted[i]);
 	}
