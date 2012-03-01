@@ -174,19 +174,19 @@ pid_t startguesser (int fd[3], char *path, char *file, char *str) {
  *   path: Path of target application.
  *   file: File to target.
  *   str: String to guess.
- * Return value: Time taken for the second-to-last character to be checked,
- *               -1 if the string is too short, or -2 if it is confirmed
- *               to be correct.
+ *   wrongind: Pointer to contain the index of the first wrong character.
+ * Return value: Time taken for the second-to-last character to be checked or
+ *               -1 if the string is too short.
  */
-long teststring (char *path, char *file, char *str) {
+long teststring (char *path, char *file, char *str, int *wrongind) {
 	int numchars = strlen(str);
 	if (numchars <= 1) {
 		return -1;
 	}
 
-	int fd[3], i;
+	int fd[3], i, highval = 0, delta;
 	struct timeval temp;
-	long start = 0, end = 0;
+	long times[numchars - 1];
 	FILE *errfile;
 	char current;
 
@@ -201,20 +201,21 @@ long teststring (char *path, char *file, char *str) {
 	i = 0;
 	while ((current = fgetc(errfile)) != EOF) {
 		if (current == '.') {
-			if (i >= numchars - 2) {
-				gettimeofday(&temp, NULL);
-				if (i == numchars - 2) {
-					start = temp.tv_usec;
-				} else {
-					end = temp.tv_usec;
-				}
-			}
+			gettimeofday(&temp, 0);
+			times[i] = temp.tv_usec;
 			++i;
 		}
 	}
 
+	for (i = 1; i < numchars; ++i) {
+		delta = usecdifference(times[i-1], times[i]);
+		if (delta > highval) {
+			highval = delta;
+			*wrongind = i - 1;
+		}
+	}
 	fclose(errfile);
-	return usecdifference(start, end);
+	return delta;
 }
 
 /* checkstring - Checks the given string. Is deterministic, unlike teststring.
@@ -253,7 +254,7 @@ unsigned char checkstring (char *path, char *file, char *str) {
  *   length: Number of elements in array.
  * Return value: The calculated variance
  */
-float variance (long *data, int length) {
+float variance (long *data, float *variation, int length) {
 	if (length == 0) {
 		return 0;
 	}
@@ -266,6 +267,7 @@ float variance (long *data, int length) {
 		if (n > 1) {
 			M2 += delta * (data[i] - mean);
 		}
+		variation[i] = M2 / n;
 	}
 	return M2 / n;
 }
@@ -281,19 +283,18 @@ void markoutliers (long *in, unsigned char *out, int length) {
 	memcpy(sorted, in, length * sizeof(long));
 	quicksort(sorted, length);
 
-	int i, difference, index, split = length, highval = 0, threshhold;
-	while (variance(sorted, split) > variance(sorted + split, length - split)) {
-		highval = 0;
-		for (i = 1; i < split; ++i) {
-			difference = sorted[i] - sorted[i - 1];
-			if (difference >= highval) {
-				highval = difference;
-				index = i;
-			}
-		}
-		split = index;
-	}
-	threshhold = sorted[split];
+	int i = 1, threshhold;
+	float dold, dnew;
+	float variation[length];
+	variance(sorted, variation, length);
+
+	dnew = variation[1] - variation[0];
+	do {
+		++i;
+		dold = dnew;
+		dnew = variation[i] - variation[i - 1];
+	} while (dnew >= dold);
+	threshhold = sorted[i - 1];
 
 	/*printf("    {");
 	for (i = 0; i < length - 1; ++i) {
@@ -314,7 +315,8 @@ void markoutliers (long *in, unsigned char *out, int length) {
  *   file: File to target.
  *   known: Current known string. The guessed character will be appended.
  *   charlist: List of characters to try.
- * Return value: Guessed character or 0 if an error occured.
+ * Return value: Guessed character, 0 if an error occured, -1 if the passed
+ *               string is incorrect.
  */
 char guesschar (char *path, char *file, char *known, char *charlist) {
 	int numchars = strlen(charlist);
@@ -333,15 +335,23 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 	}
 
 	// printf("  Running passes\n");
-	int highind;
+	int highind, wrongind, incorrect = 1;
 	while ((highind = findlargest(counts, numchars)) == -1 && j <= MAX_PASSES) {
 		// printf("    Pass %i\n", j + 1);
 		for (i = 0; i < numchars; ++i) {
 			known[index] = charlist[i];
-			times[i] = teststring(path, file, known);
+			times[i] = teststring(path, file, known, &wrongind);
+			if (wrongind == index) {
+				incorrect = 0;
+			}
+		}
+		markoutliers(times, counts, numchars);
+		if (incorrect) {
+			// printf("  Backtracking...\n");
+			known[index - 1] = '\0';
+			return -1;
 		}
 		++j;
-		markoutliers(times, counts, numchars);
 	}
 	// printf("Guessed character %i as %c after %i %s\n", index + 1, charlist[highind], j, j == 1 ? "pass" : "passes");
 
