@@ -24,7 +24,6 @@
 #include <errno.h>
 
 #define MAX_PASSES 5
-#define MAX_MATCHES 6
 #define MAX_LENGTH 50
 
 /* usecdifference - Find a sub-second difference between microsecond values.
@@ -98,9 +97,6 @@ int qs_partition (long *array, int start, int end) {
  *   end: Last index of area to sort.
  */
 void qs_helper (long *array, int start, int end) {
-	if (start >= MAX_MATCHES) {
-		return;
-	}
 	int split = qs_partition(array, start, end);
 
 	if (start < split) {
@@ -251,6 +247,29 @@ unsigned char checkstring (char *path, char *file, char *str) {
 	return 0;
 }
 
+/* variance - calculates the variance of an array of values.
+ * Parameters:
+ *   data: Array to calculate the variance of.
+ *   length: Number of elements in array.
+ * Return value: The calculated variance
+ */
+float variance (long *data, int length) {
+	if (length == 0) {
+		return 0;
+	}
+	int i, n = 0;
+	float delta, mean = 0, M2 = 0;
+	for (i = 0; i < length; ++i) {
+		++n;
+		delta = data[i] - mean;
+		mean += delta / n;
+		if (n > 1) {
+			M2 += delta * (data[i] - mean);
+		}
+	}
+	return M2 / n;
+}
+
 /* markoutliers - Attempts to find and mark the lowest times in the in array.
  * Parameters:
  *   in: Array of length length containing time measurements.
@@ -262,14 +281,19 @@ void markoutliers (long *in, unsigned char *out, int length) {
 	memcpy(sorted, in, length * sizeof(long));
 	quicksort(sorted, length);
 
-	int i, difference, threshhold, highval = 0;
-	for (i = 1; i < MAX_MATCHES; ++i) {
-		difference = sorted[i] - sorted[i - 1];
-		if (difference > highval) {
-			highval = difference;
-			threshhold = sorted[i];
+	int i, difference, index, split = length, highval = 0, threshhold;
+	while (variance(sorted, split) > variance(sorted + split, length - split)) {
+		highval = 0;
+		for (i = 1; i < split; ++i) {
+			difference = sorted[i] - sorted[i - 1];
+			if (difference >= highval) {
+				highval = difference;
+				index = i;
+			}
 		}
+		split = index;
 	}
+	threshhold = sorted[split];
 
 	/*printf("  {");
 	for (i = 0; i < length - 1; ++i) {
