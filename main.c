@@ -397,6 +397,7 @@ int main (int argc, char **argv) {
 	signal(SIGCHLD, SIG_IGN);
 	char *str = findstring(argv[1], argv[2], charlist);
 	printf("%s\n", str == 0 ? "Sorry, the password could not be found" : str);
+	free(str);
 
 	return EXIT_SUCCESS;
 }
