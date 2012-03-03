@@ -273,21 +273,18 @@ float variance (long *data, float *variation, int length) {
 	return M2 / n;
 }
 
-/* markoutliers - Attempts to find and mark the lowest times in the in array.
+/* findthreshhold - Finds the threshhold that seperates correct times
+ *                  from incorrect ones.
  * Parameters:
- *   in: Array of length length containing time measurements.
- *   out: Array of length length which will get "correct" elements incremented.
- *   length: Number of elements in arrays.
+ *   in: Sorted array of length length containing times.
+ *   length: Number of elements in array.
+ * Return value: The calculated threshhold.
  */
-void markoutliers (long *in, unsigned char *out, int length) {
-	long sorted[length];
-	memcpy(sorted, in, length * sizeof(long));
-	quicksort(sorted, length);
-
-	int i = 1, threshhold;
+int findthreshhold (long *in, int length) {
+	int i = 1;
 	float dold, dnew;
 	float variation[length];
-	variance(sorted, variation, length);
+	variance(in, variation, length);
 
 	dnew = variation[1] - variation[0];
 	do {
@@ -295,8 +292,22 @@ void markoutliers (long *in, unsigned char *out, int length) {
 		dold = dnew;
 		dnew = variation[i] - variation[i - 1];
 	} while (dnew >= dold);
-	threshhold = sorted[i - 1];
+	return in[i - 1];
+}
 
+/* markoutliers - Attempts to find and mark the lowest times in the in array.
+ * Parameters:
+ *   in: Array of length length containing time measurements.
+ *   out: Array of length length which will get "correct" elements incremented.
+ *   length: Number of elements in arrays.
+ */
+void markoutliers (long *in, unsigned char *out, int length) {
+	int i, threshhold;
+	long sorted[length];
+	memcpy(sorted, in, length * sizeof(long));
+	quicksort(sorted, length);
+
+	threshhold = findthreshhold(sorted, length);
 	/*printf("    {");
 	for (i = 0; i < length - 1; ++i) {
 		printf("%i, ", sorted[i]);
