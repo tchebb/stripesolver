@@ -339,7 +339,7 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 	known[index + 2] = '\0';
 
 	// printf("Guessing character %i\n", index + 1);
-	// printf("  Zeroing counts\n");
+	// printf("  Initializing counts\n");
 	int i, j = 0;
 	for (i = 0; i < numchars; ++i) {
 		counts[i] = 1;
