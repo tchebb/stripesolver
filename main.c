@@ -253,7 +253,7 @@ unsigned char checkstring (char *path, char *file, char *str) {
  *   data: Array to calculate the variance of.
  *   variation: Array to store the cumulative variances in.
  *   length: Number of elements in arrays.
- * Return value: The calculated variance
+ * Return value: The calculated variance.
  */
 float variance (long *data, float *variation, int length) {
 	if (length == 0) {
