@@ -41,25 +41,24 @@ inline long usecdifference (long start, long end) {
 	return result;
 }
 
-/* findlargest - Find the largest value in an array of unsigned chars.
+/* findcorrect - Find the index of the 1 in an array of 0s.
  * Parameters:
  *   counts: Unsigned char array.
  *   length: Number of elements in array.
- * Return value: Either the index of the largest value, or -1 in case of a tie.
+ * Return value: Either the index of the 1, -1 if there are multiple,
+ *               or -2 if there are none.
  */
-int findlargest (unsigned char *counts, int length) {
-	int i, highind, highval = 0, tied = 1;
+int findcorrect (unsigned char *counts, int length) {
+	int i, index = -2;
 	for (i = 0; i < length; ++i) {
-		if (counts[i] > highval) {
-			highval = counts[i];
-			highind = i;
-			tied = 0;
-		} else if (counts[i] == highval) {
-			tied = 1;
+		if (counts[i] == 1) {
+			if (index != -2) {
+				return -1;
+			}
+			index = i;
 		}
 	}
-
-	return tied ? -1 : highind;
+	return index;
 }
 
 /* qs_partition - Partitioning algorithm for quicksort - do not call directly.
@@ -348,7 +347,7 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 
 	// printf("  Running passes\n");
 	int highind, wrongind, incorrect;
-	while ((highind = findlargest(counts, numchars)) == -1 && j <= MAX_PASSES) {
+	while ((highind = findcorrect(counts, numchars)) == -1 && j <= MAX_PASSES) {
 		// printf("    Pass %i\n", j + 1);
 		incorrect = 1;
 		for (i = 0; i < numchars; ++i) {
