@@ -347,7 +347,7 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 
 	// printf("  Running passes\n");
 	int highind, wrongind, incorrect;
-	while ((highind = findcorrect(counts, numchars)) == -1 && j <= MAX_PASSES) {
+	while ((highind = findcorrect(counts, numchars)) < 0 && j <= MAX_PASSES) {
 		// printf("    Pass %i\n", j + 1);
 		incorrect = 1;
 		for (i = 0; i < numchars; ++i) {
