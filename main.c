@@ -236,7 +236,8 @@ long teststring (char *path, char *file, char *str, int *firstwrong) {
  *   path: Path of target application.
  *   file: File to target.
  *   str: String to check.
- * Return value: 0 if the string is not correct, 1 if it is.
+ * Return value: 0 if the string is not correct, 1 if it is, 2 if the guesser
+ * gave unexpected output.
  */
 unsigned char checkstring (char *path, char *file, char *str) {
 	// Start the password guesser and open stderr.
@@ -260,7 +261,7 @@ unsigned char checkstring (char *path, char *file, char *str) {
 
 	// If we're here, the program output was unexpected.
 	fclose(errfile);
-	return 0;
+	return 2;
 }
 
 /* variance - calculates the variance of an array of values.
