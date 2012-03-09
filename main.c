@@ -458,18 +458,26 @@ char *findstring (char *path, char *file, char *charlist) {
 	// Repeatedly call guesschar to find the string. We must add 2 characters to the string
 	// length to account for the "test character" that is needed and the null terminator.
 	char current;
+	unsigned char result;
 	while ((current = guesschar(path, file, str, charlist)) != 0 && length < MAX_LENGTH - 2) {
-		// If the string is correct, return it.
-		if (checkstring(path, file, str)) {
+		result = checkstring(path, file, str);
+		if (result == 1) {
+			// If the string is correct, return it.
 			return str;
+		} else if (result == 2) {
+			// If an error occured, pass it on.
+			return 0;
 		}
 
 		// If the return value of guesschar is -1, we have guessed
 		// a character wrong and must backtrack.
-		if (current == -1) {
+		if (current >= 0) {
+			++length;
+		} else if (current == -1) {
 			--length;
 		} else {
-			++length;
+			// If an error occured, pass it on.
+			return 0;
 		}
 	}
 
