@@ -355,7 +355,7 @@ void markoutliers (long *in, unsigned char *out, int length) {
  *   known: Current known string. The guessed character will be appended.
  *   charlist: List of characters to try.
  * Return value: Guessed character, 0 if an error occured, -1 if the passed
- *               string is incorrect.
+ *               string is incorrect, -2 if the character could not be guessed.
  */
 char guesschar (char *path, char *file, char *known, char *charlist) {
 	// Calculate the number of possible characters
@@ -410,9 +410,15 @@ char guesschar (char *path, char *file, char *known, char *charlist) {
 
 		// Backtrack if the current string is incorrect.
 		if (isincorrect) {
-			// printf("  Backtracking...\n");
-			known[index - 1] = '\0';
-			return -1;
+			if (index == 0) {
+				// Something is really wrong.
+				known[index] = '\0';
+				return -2;
+			} else {
+				// printf("  Backtracking...\n");
+				known[index - 1] = '\0';
+				return -1;
+			}
 		}
 
 		// Call markoutliers to perform processing on the times and store the
