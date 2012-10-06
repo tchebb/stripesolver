@@ -466,6 +466,7 @@ char *findstring (char *path, char *file, char *charlist) {
 			return str;
 		} else if (result == 2) {
 			// If an error occured, pass it on.
+			free(str);
 			return 0;
 		}
 
@@ -477,6 +478,7 @@ char *findstring (char *path, char *file, char *charlist) {
 			--length;
 		} else {
 			// If an error occured, pass it on.
+			free(str);
 			return 0;
 		}
 	}
